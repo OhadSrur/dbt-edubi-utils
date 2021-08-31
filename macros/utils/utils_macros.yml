@@ -1,0 +1,68 @@
+version: 2
+macros:
+- name: case_when_is_not_null
+  description: Check if value is NULL or not. Assigns bit 1 (TRUE) when is not null.
+  arguments:
+  - name: column_name
+    type: string
+    description: The name of the column
+- name: case_when_is_null_or_blank
+  description: When column value is NULL or empty, then assign new_value
+  arguments:
+  - name: column_name
+    type: string
+    description: The name of the column
+  - name: new_value
+    type: string
+    description: The new assigned value
+- name: delete_outdated_tables
+  description: Delete any orphaned tables or views in schema
+  arguments:
+  - name: schema
+    type: string
+    description: The name of the schema to be checked
+  - name: commit
+    type: boolean
+    description: Default is False. When TRUE the macro will commit the process.
+- name: case_when_is_true_sum_bool
+  description: Summarize boolean values. i.e. True = 1, False = 0
+  arguments:
+  - name: boolean_measure
+    type: boolean
+    description: This is the boolean column
+  - name: when_is_false
+    type: boolean
+    description: '{{ doc("when_is_false") }}'
+- name: case_when_is_true_sum_interval
+  description: Use this macro to sum time
+  arguments:
+  - name: measure
+    type: time
+    description: This is the time column you want to sum
+  - name: predicate
+    type: boolean
+    description: '{{ doc("predicate") }}'
+  - name: when_is_false
+    type: boolean
+    description: '{{ doc("when_is_false") }}'
+- name: case_when_is_true_sum
+  description: Use this macro to sum numeric values
+  arguments:
+  - name: measure
+    type: numeric
+    description: This is the numeric column you want to sum
+  - name: predicate
+    type: boolean
+    description: '{{ doc("predicate") }}'
+  - name: when_is_false
+    type: boolean
+    description: '{{ doc("when_is_false") }}'
+- name: convert_interval_to_numeric
+  description: Convert time interval into numeric
+  arguments:
+  - name: time_interval
+    type: time
+    description: This is the time column you want to convert
+  - name: division
+    type: numeric
+    description: Devide the interval with this number. Use 3600 to convert into hours.

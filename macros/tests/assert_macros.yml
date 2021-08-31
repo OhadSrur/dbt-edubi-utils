@@ -1,0 +1,32 @@
+version: 2
+macros:
+- name: model_rowcount
+  description: Does a rowcount check and fails if there are fewer rows than expected. An optional condition
+    can be applied as well.
+  arguments:
+  - name: model_name
+    type: string
+    description: The name of the dbt model being referenced
+  - name: count
+    type: integer
+    description: The minimum number of rows expected in the source table
+  - name: where_clause
+    type: string
+    description: Optional filter on the data. Wrap the entire clause in double quotes.
+- name: source_rowcount
+  description: Does a rowcount check and fails if there are fewer rows than expected. An optional condition
+    can be applied as well. This is for a source reference as defined in a sources.yml file.
+  arguments:
+  - name: source_name
+    type: string
+    description: The name of the dbt source (such as zuora, defined in a sources.yml file). This is not
+      the schema name in the raw database.
+  - name: table
+    type: string
+    description: The name of the table being referenced
+  - name: count
+    type: integer
+    description: The minimum number of rows expected in the source table
+  - name: where_clause
+    type: string
+    description: Optional filter on the data. Wrap the entire clause in double quotes.
