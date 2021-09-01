@@ -1,0 +1,4 @@
+col_to_check,result_expected,result_expected_inverted
+10,TRUE,FALSE
+-10,FALSE,TRUE
+0,FALSE,FALSE
