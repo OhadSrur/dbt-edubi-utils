@@ -1,11 +1,7 @@
 {% test assert_no_keywords(model, column_name) %}
-{{ 
-    config(
-    enabled = target.name in ['dev'])
-}}
 
 with wordslist as(
-    select keyword from "OSRUR_test"."local_keywords"
+    select keyword from {{ ref('local_keywords') }}
 )
 
     select *
