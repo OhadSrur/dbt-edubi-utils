@@ -2,3 +2,15 @@ name: 'edubi_utils_integration_tests'
 version: '0.1.0'
 profile: 'integration_tests'
 config-version: 2
+
+source-paths: ["models"]
+data-paths: ["data"]
+
+seeds:
+
+  +quote_columns: false
+  edubi_utils_integration_tests:
+    
+    schema_tests:
+
+    utils:

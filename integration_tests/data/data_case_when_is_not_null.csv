@@ -1,4 +1,0 @@
-col_to_check,result_expected,result_expected_inverted
-a,TRUE,FALSE
-,FALSE,TRUE
-0,TRUE,FALSE

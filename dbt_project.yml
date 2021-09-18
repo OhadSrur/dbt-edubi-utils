@@ -3,8 +3,6 @@ version: '0.1.0'
 config-version: 2
 profile: 'integration_tests'
 
-source-paths: ["models"]
-data-paths: ["data"]
 macro-paths: ["macros"]
 
 models:
