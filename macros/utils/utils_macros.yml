@@ -66,3 +66,15 @@ macros:
   - name: division
     type: numeric
     description: Devide the interval with this number. Use 3600 to convert into hours.
+- name: get_model_name
+  description: Generate the model filename. This model is used to abstract the model system name.
+  arguments:
+  - name: model_part
+    type: string
+    description: The model prefix name. i.e clean, stg, dim etc..
+  - name: model_name
+    type: string
+    description: The core name of the model. i.e. school_dates
+  - name: var_name
+    type: string
+    description: The system code variable. The `var` is defined in `dbt_project.yml`. i.e. sis_system_code
