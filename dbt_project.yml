@@ -1,15 +1,5 @@
 name: 'edubi_utils'
 version: '0.1.0'
 config-version: 2
-profile: 'integration_tests'
 
 macro-paths: ["macros"]
-
-models:
-  edubi_utils:
-      +materialized: view
-
-seeds:
-  edubi_utils:
-    +schema: source
-    +quote_columns: false
