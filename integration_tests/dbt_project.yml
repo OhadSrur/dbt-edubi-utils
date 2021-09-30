@@ -7,10 +7,4 @@ source-paths: ["models"]
 data-paths: ["data"]
 
 seeds:
-
   +quote_columns: false
-  edubi_utils_integration_tests:
-    
-    schema_tests:
-
-    utils:
