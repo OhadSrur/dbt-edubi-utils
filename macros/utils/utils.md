@@ -21,6 +21,7 @@ sources:
 Below is an example and the expected output:
 
 ```sql
+{% raw %}
 {{ edubi_utils.cte([
     ('account','my_accounts'),
     ('users','source_users','is_active=1')])
@@ -33,11 +34,13 @@ Below is an example and the expected output:
     FROM {{ref('excluded_accounts')}}
 
 )
+{% endraw %}
 ```
 
 **Output:**
 
 ```sql
+{% raw %}
 WITH account AS (
 
     SELECT * 
@@ -58,11 +61,13 @@ WITH account AS (
     FROM "PROD".legacy.excluded_accounts
 
 )
+{% endraw %}
 ```
 
 ***Examples for Using VAR***
 
 ```sql
+{% raw %}
 {{
     edubi_utils.cte([('source','seq_academic_achievement')],cte_ref_type='var')
 }},
@@ -72,20 +77,24 @@ renames as (
     select *
     from source
 )
+{% endraw %}
 ```
 
 dbt_project.yml
 
 ```yml
+{% raw %}
 vars:
   seqta_schema: OSRUR_seed
   seqta_academic:
     seq_academic_achievement: "{{ source('seqta_sources','SEQTA_academicachievement') }}"
+{% endraw %}
 ```
 
 ***Examples for Using Source***
 
 ```sql
+{% raw %}
 {{
     edubi_utils.cte([('data_test','data_case_when_is_not_null')],cte_ref_type='source', source_name='test_source')
 }},
@@ -95,6 +104,7 @@ renames as (
     select *
     from data_test
 )
+{% endraw %}
 ```
 
 schema.yml
@@ -109,9 +119,13 @@ sources:
 {% enddocs %}
 
 {% docs when_is_false %}
+
 Use this to switch the logic direction. To use it pass '1::BOOLEAN' to the parameter
+
 {% enddocs %}
 
 {% docs predicate %}
+
 Insert here the were clause condition for what need to be sum
+
 {% enddocs %}
