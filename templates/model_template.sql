@@ -1,4 +1,13 @@
 {{
+    config(
+        primary_key="",
+        post_hook=[
+            "{{ edubi_utils.create_primary_key(this, '') }}"
+        ]
+    )
+}}
+
+{{
     edubi_utils.cte([('','')])
 }},
 
