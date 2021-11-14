@@ -40,10 +40,16 @@ models:
       actual: actual
       expected: expected
 - name: test_convert_string_to_int
+  description: Converts the string into int, if cannot be converted will default to null or the defaulted INT value provided
   tests:
   - edubi_utils.assert_equal:
       actual: actual
       expected: expected
+  columns:
+      - name: string_value
+        description: The passed value to check if it is a string number
+      - name: default_none_int_value
+        description: The defaulted INT value when the passed value is not a string
 - name: test_case_when_is_true_sum_bool
   tests:
   - dbt_utils.equality:

@@ -1,6 +1,6 @@
-col_to_check,result_expected
-1234,1234
-005678,5678
-abc,null
--54,-54
-12a,null
+col_to_check,result_expected,result_expected_default
+1234,1234,1234
+005678,5678,5678
+abc,null,-1
+-54,-54,-54
+12a,null,-1

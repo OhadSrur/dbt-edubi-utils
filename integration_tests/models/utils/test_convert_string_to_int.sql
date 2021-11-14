@@ -4,8 +4,16 @@
 
 final as (
     select
-        {{ edubi_utils.convert_string_to_int('col_to_check')}}  as actual,
-        result_expected                                         as expected
+        {{ edubi_utils.convert_string_to_int('col_to_check')}}      as actual,
+        result_expected                                             as expected
+
+    from data_test
+
+    union all
+
+    select
+        {{ edubi_utils.convert_string_to_int('col_to_check','-1')}} as actual,
+        result_expected_default                                     as expected
 
     from data_test
 )

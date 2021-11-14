@@ -8,3 +8,4 @@ data-paths: ["data"]
 
 seeds:
   +quote_columns: false
+  +schema: source
