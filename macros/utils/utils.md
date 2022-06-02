@@ -85,7 +85,7 @@ dbt_project.yml
 ```yml
 {% raw %}
 vars:
-  seqta_schema: OSRUR_seed
+  seqta_schema: dev_seed
   seqta_academic:
     seq_academic_achievement: "{{ source('seqta_sources','SEQTA_academicachievement') }}"
 {% endraw %}

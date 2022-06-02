@@ -1,10 +1,10 @@
 name: 'edubi_utils_integration_tests'
-version: '0.1.0'
+version: '0.1.1'
 profile: 'integration_tests'
 config-version: 2
 
-source-paths: ["models"]
-data-paths: ["data"]
+model-paths: ["models"]
+seed-paths: ["seeds"]
 
 seeds:
   +quote_columns: false
