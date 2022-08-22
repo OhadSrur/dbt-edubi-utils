@@ -1,9 +1,9 @@
-{% macro model_rowcount(model_name, count, where_clause=None) %}
+{% test model_rowcount(model, count, where_clause=None) %}
 
 WITH source AS (
 
     SELECT *
-    FROM {{ ref(model_name) }}
+    FROM {{ model }}
 
 ), counts AS (
 
@@ -17,6 +17,6 @@ WITH source AS (
 
 SELECT row_count
 FROM counts
-WHERE row_count < {{ count }}
+WHERE row_count != {{ count }}
 
-{% endmacro %}
+{% endtest %}

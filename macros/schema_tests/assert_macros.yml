@@ -1,18 +1,19 @@
 version: 2
-macros:
+tests:
 - name: model_rowcount
-  description: Does a rowcount check and fails if there are fewer rows than expected. An optional condition
+  description: Does a rowcount check and fails if the number of the rows is different from what expected. An optional where condition
     can be applied as well.
   arguments:
-  - name: model_name
+  - name: model
     type: string
     description: The name of the dbt model being referenced
   - name: count
     type: integer
-    description: The minimum number of rows expected in the source table
+    description: The number of rows expected in the table
   - name: where_clause
     type: string
     description: Optional filter on the data. Wrap the entire clause in double quotes.
+macros:
 - name: source_rowcount
   description: Does a rowcount check and fails if there are fewer rows than expected. An optional condition
     can be applied as well. This is for a source reference as defined in a sources.yml file.
