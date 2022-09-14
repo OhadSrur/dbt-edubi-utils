@@ -3,9 +3,9 @@
   {% if target.name == 'prod' %}
             {{col_name}}
   {%- else -%}     
-            (select coalesce(replace({{col_name}},uf.keyword,uf.keyword_replacement),{{col_name}})
+            coalesce((select replace({{col_name}},uf.keyword,uf.keyword_replacement)
             FROM {{obfuscate_schema_name}}.{{obfuscate_table}} as uf
             WHERE client_code=lower('{{ client_code }}') and {{col_name}} ilike '%' || uf.keyword || '%'
-            Limit 1)
+            Limit 1),{{col_name}})
   {%- endif -%}
 {% endmacro %}
