@@ -3,8 +3,8 @@
   {% if target.name == 'prod' %}
         {{col_name}}
   {%- else -%}
-        coalesce((select user_principal_name
+        coalesce((select new_upn
         FROM {{ ref('rls_dev') }}
-        WHERE {{col_name}}=replace_staff_email),{{col_name}})
+        WHERE {{col_name}}=replace_upn),{{col_name}})
   {%- endif -%}
 {% endmacro %}
