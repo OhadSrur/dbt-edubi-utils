@@ -1,7 +1,7 @@
-{# This macro will swap the keyword values with the key lookup value provided. Default is NOT to obfuscate description #}
-{# Add the following to obfuscate description. --vars 'obfuscate_description: true' #}
+{# This macro will swap the keyword values with the key lookup value provided. Default is to obfuscate description #}
+{# Add the following to remove obfuscation description. --vars 'obfuscate_description: false' #}
 {% macro obfuscate_descriptions(col_name,client_code,obfuscate_table='descriptive_codes',obfuscate_schema_name='fake') %}
-  {% if target.name == 'prod' or not(var('obfuscate_description',false)) %}
+  {% if target.name == 'prod' or var('obfuscate_description',false) %}
         {{col_name}}
   {%- else -%}     
         coalesce((select replace({{col_name}},uf.keyword,uf.keyword_replacement)
