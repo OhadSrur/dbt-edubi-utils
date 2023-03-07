@@ -1,6 +1,6 @@
 {# This macro will swap the lookup values with the key lookup value provided. Default is to obfuscate value in dev #}
 {# Add the following to remove obfuscation description. --vars 'obfuscate_description: false' #}
-{% macro obfuscate_lookups(col_id,col_name,table_name,obfuscate_table='lookup',obfuscate_schema_name='fake') %}
+{% macro obfuscate_lookups(col_id,col_name,table_name,obfuscate_table='lookups',obfuscate_schema_name='fake') %}
   {% if target.name == 'prod' or var('obfuscate_description',false) %}
         {{col_name}}
   {%- else -%}     
