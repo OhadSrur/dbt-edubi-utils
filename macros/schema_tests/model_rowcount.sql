@@ -1,5 +1,5 @@
-{% test model_rowcount(model, count, where_clause=None) %}
-
+{% test model_rowcount(model, count, where_clause=None, test_direction='!=') %}
+{# Use this model to test if the model equals to what is expected #}
 WITH source AS (
 
     SELECT *
@@ -17,6 +17,6 @@ WITH source AS (
 
 SELECT row_count
 FROM counts
-WHERE row_count != {{ count }}
+WHERE row_count {{test_direction}} {{ count }}
 
 {% endtest %}
