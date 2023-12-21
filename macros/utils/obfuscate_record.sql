@@ -6,7 +6,7 @@
 
 {%- macro duckdb__obfuscate_record(col_name,client_code,sample_size=40200) -%}
   {% if target.name == 'prod' or var('obfuscate_record',false) %}
-        {{col_name}}
+        -1
   {%- else -%}
         hash(concat({{col_name}},{{client_code}})) % {{sample_size}}
   {%- endif -%}
@@ -14,7 +14,7 @@
 
 {%- macro postgres__obfuscate_record(col_name,client_code,sample_size=40200) -%}
   {% if target.name == 'prod' or var('obfuscate_record',false) %}
-        {{col_name}}
+        -1
   {%- else -%}
         fake.h_int(concat({{col_name}},{{client_code}}))
   {%- endif -%}
