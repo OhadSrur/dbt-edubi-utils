@@ -1,4 +1,3 @@
-version: 2
 macros:
 - name: case_when_is_not_null
   description: Check if value is NULL or not. Assigns bit 1 (TRUE) when is not null.
