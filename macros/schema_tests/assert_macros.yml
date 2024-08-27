@@ -1,4 +1,4 @@
-tests:
+data_tests:
 - name: model_rowcount
   description: Does a rowcount check and fails if the number of the rows is different from what expected. An optional where condition
     can be applied as well.
