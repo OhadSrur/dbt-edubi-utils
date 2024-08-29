@@ -1,7 +1,6 @@
 name: 'edubi_utils_integration_tests'
 version: '0.1.1'
 profile: 'integration_tests'
-config-version: 2
 
 model-paths: ["models"]
 seed-paths: ["seeds"]
