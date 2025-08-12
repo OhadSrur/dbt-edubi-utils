@@ -37,7 +37,7 @@
     - Traversal is transitive (BFS) via dbt’s dependency graph.
     - Column precheck is best-effort (simple tokenizer, no regex). Complex SQL may not be fully parsed.
 
-  Example
+  Example 1: 
     edev dbt run-operation edubi_utils.trace_record_dag --args '{
       "target_model_name": "clean_syn__student_assessment_results",
       "where_clause": "student_assessment_results_seq_key = 10871210",
@@ -47,6 +47,18 @@
       "print_format": "table",
       "verbose": false
     }''
+
+  Example 2: This format is required when passing a string in the Where clause
+    edev dbt run-operation edubi_utils.trace_record_dag --args "{ \
+        \"target_model_name\": \"fct_syn__student_assessments_results\", \
+        \"where_clause\": \"_key_syn__student_assessment_results = '12583725-08MTHH-11'\", \
+        \"direction\": \"upstream\", \
+        \"output_columns\": [\"_key_syn__student_assessment_results\",\"class_code\",\"academic_year\",\"term_number\",\"mark_out_of\"], \
+        \"max_rows\": 10, \
+        \"print_format\": \"table\", \
+        \"verbose\": true \
+    }"
+    "--- Fix SQL formatting ---"
 -#}
 
 {% macro trace_record_dag__print_rows(rel_str, headers, table, fmt) %}
@@ -194,14 +206,24 @@
   {% endif %}
   {{ log("---------------------------", info=True) }}
 
-  {# Precheck columns in WHERE #}
+  {# Precheck columns in WHERE (ignore single-quoted literals) #}
   {% if precheck_columns %}
-    {% set _lc = where_clause | lower %}
+    {# Strip all text inside single quotes (simple SQL string rule) #}
+    {% set parts = where_clause.split("'") %}
+    {% set outside = [] %}
+    {% for i in range(0, parts | length) %}
+      {% if (i % 2) == 0 %}
+        {% do outside.append(parts[i]) %}
+      {% endif %}
+    {% endfor %}
+    {% set stripped = outside | join(' ') %}
+
+    {% set _lc = stripped | lower %}
     {% set _norm = _lc
       | replace('\n',' ') | replace('\r',' ') | replace('\t',' ')
       | replace('(',' ')  | replace(')',' ')  | replace('[',' ') | replace(']',' ')
       | replace('{',' ')  | replace('}',' ')  | replace(',',' ') | replace(';',' ')
-      | replace("'",' ')  | replace('"',' ')  | replace(':',' ') | replace('?',' ')
+      | replace('"',' ')  | replace(':',' ')  | replace('?',' ')
       | replace('+',' ')  | replace('-',' ')  | replace('*',' ') | replace('/',' ')
       | replace('%',' ')  | replace('=',' ')  | replace('!',' ') | replace('<',' ') | replace('>',' ')
       | replace('|',' ')  | replace('&',' ')  | replace('.',' . ')
@@ -229,6 +251,11 @@
         {% endif %}
       {% endif %}
     {% endfor %}
+
+    {# Optional: debug what the tokenizer saw #}
+    {% if verbose %}
+      {{ log("Precheck identifiers parsed from WHERE: [" ~ (ids_in_where | join(', ')) ~ "]", info=True) }}
+    {% endif %}
   {% endif %}
 
   {% for node in ordered %}
