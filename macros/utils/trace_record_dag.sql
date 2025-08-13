@@ -251,8 +251,6 @@
         {% endif %}
       {% endif %}
     {% endfor %}
-
-    {# Optional: debug what the tokenizer saw #}
     {% if verbose %}
       {{ log("Precheck identifiers parsed from WHERE: [" ~ (ids_in_where | join(', ')) ~ "]", info=True) }}
     {% endif %}
@@ -280,8 +278,11 @@
       {% continue %}
     {% endif %}
 
-    {% if precheck_columns %}
-      {% set cols = adapter.get_columns_in_relation(rel) %}
+    {# ---- Safe precheck / column retrieval ---- #}
+    {% set cols = adapter.get_columns_in_relation(rel) or [] %}
+    {% set _do_precheck = precheck_columns and (cols | length > 0) %}
+
+    {% if _do_precheck %}
       {% set colnames_lower = cols | map(attribute='name') | map('lower') | list %}
       {% set missing = [] %}
       {% for w in ids_in_where %}
@@ -293,8 +294,8 @@
         {% if verbose %}{{ log("[" ~ loop.index ~ "/" ~ loop.length ~ "] " ~ rel ~ ": SKIPPED (columns not found: " ~ (missing | join(', ')) ~ ")", info=True) }}{% endif %}
         {% continue %}
       {% endif %}
-    {% else %}
-      {% set cols = adapter.get_columns_in_relation(rel) %}
+    {% elif precheck_columns and verbose %}
+      {{ log("[" ~ loop.index ~ "/" ~ loop.length ~ "] " ~ rel ~ ": proceeding without precheck (column list unavailable)", info=True) }}
     {% endif %}
 
     {% set check_sql %}select count(*) as record_count from {{ rel }} where {{ where_clause }}{% endset %}
@@ -303,21 +304,30 @@
     {{ log("[" ~ loop.index ~ "/" ~ loop.length ~ "] " ~ rel ~ ": " ~ (cnt if cnt is not none else 'NULL') ~ " record(s).", info=True) }}
 
     {% if output_columns | length > 0 and (cnt | int > 0) %}
-      {% set requested_lower = output_columns | map('lower') | list %}
-      {% set actual_by_lower = {} %}
-      {% for c in cols %}{% do actual_by_lower.update({ (c.name | lower): c.name }) %}{% endfor %}
-      {% set resolved = [] %}
-      {% set missing_out = [] %}
-      {% for oc in requested_lower %}
-        {% if oc in actual_by_lower %}
-          {% do resolved.append(actual_by_lower[oc]) %}
-        {% else %}
-          {% do missing_out.append(oc) %}
+      {# If we have a column list, validate & map case-insensitively; else use as provided #}
+      {% if cols | length > 0 %}
+        {% set requested_lower = output_columns | map('lower') | list %}
+        {% set actual_by_lower = {} %}
+        {% for c in cols %}{% do actual_by_lower.update({ (c.name | lower): c.name }) %}{% endfor %}
+        {% set resolved = [] %}
+        {% set missing_out = [] %}
+        {% for oc in requested_lower %}
+          {% if oc in actual_by_lower %}
+            {% do resolved.append(actual_by_lower[oc]) %}
+          {% else %}
+            {% do missing_out.append(oc) %}
+          {% endif %}
+        {% endfor %}
+        {% if missing_out | length > 0 %}
+          {% if verbose %}{{ log("      └─ Skipping data print (missing: " ~ (missing_out | join(', ')) ~ ")", info=True) }}{% endif %}
+          {% set resolved = [] %}
         {% endif %}
-      {% endfor %}
-      {% if missing_out | length > 0 %}
-        {% if verbose %}{{ log("      └─ Skipping data print (missing: " ~ (missing_out | join(', ')) ~ ")", info=True) }}{% endif %}
       {% else %}
+        {% if verbose %}{{ log("      └─ Column metadata unavailable; attempting sample select without validation", info=True) }}{% endif %}
+        {% set resolved = output_columns %}
+      {% endif %}
+
+      {% if resolved | length > 0 %}
         {% set sample_sql %}
           select {{ resolved | join(', ') }}
           from {{ rel }}
