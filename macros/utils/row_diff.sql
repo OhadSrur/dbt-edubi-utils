@@ -23,6 +23,9 @@
     - Comma-separated string: "col1, col2, col3"
     - Wildcard: "*" to select all columns automatically
   - null_token (string, optional): Value to replace NULLs before hashing. Default: '∅'
+  - where_clause (string, optional): WHERE clause to filter both tables (without the WHERE keyword).
+    For string literals, you can use double quotes which will be converted to single quotes automatically:
+    Example: 'column = \"value\"' becomes 'column = 'value'' in SQL. Default: none
   
   ### Output
   Returns SQL that produces a result set with:
@@ -37,6 +40,7 @@
   - ✅ Flexible input formats: Supports arrays, strings, and bracket notation
   - ✅ Clean SQL output: Optimized whitespace and formatting
   - ✅ Full column visibility: Shows actual column values, not just hashes
+  - ✅ WHERE clause filtering: Apply filters to both tables before comparison
   
   ### Usage Examples
   
@@ -54,6 +58,15 @@
       table_new='dev_stg.students',
       unique_key='student_id',
       compare_columns='*'
+  ) }}
+
+  #### With WHERE Clause Filter
+  {{ edubi_utils.row_diff_sql(
+      table_old='prd_stg.customers',
+      table_new='dev_stg.customers',
+      unique_key='customer_id',
+      compare_columns=['name', 'email', 'status'],
+      where_clause='status = "active" and created_date >= "2024-01-01"'
   ) }}
 
   ## row_diff
@@ -123,6 +136,15 @@
     "unique_key": "_key_period",
     "compare_columns": "*"
   }''
+
+  #### With WHERE Clause Filter
+  edev dbt run-operation edubi_utils.row_diff_operation --args '{
+    "table_old": "prd_stg.customers",
+    "table_new": "dev_stg.customers",
+    "unique_key": "customer_id",
+    "compare_columns": "name, email, status",
+    "where_clause": "status = \"active\" and created_date >= \"2024-01-01\""
+  }''
   
   ### Sample Output
   === ROW DIFF SUMMARY ===
@@ -162,10 +184,19 @@
   
   #### Show SQL for All Columns (Wildcard)
   edev dbt run-operation edubi_utils.row_diff_sql_show --args '{
-    "table_old": "prd_stg.fct_tasks_marks", 
+    "table_old": "prd_stg.fct_tasks_marks",
     "table_new": "dev_stg.fct_tasks_marks",
     "unique_key": "customer_id",
     "compare_columns": "*"
+  }''
+
+  #### Show SQL with WHERE Clause
+  edev dbt run-operation edubi_utils.row_diff_sql_show --args '{
+    "table_old": "prd_stg.students",
+    "table_new": "dev_stg.students",
+    "unique_key": "student_id",
+    "compare_columns": ["name","email","status"],
+    "where_clause": "year_level >= 10 and enrollment_status = \"active\""
   }''
   
   ### Output
@@ -187,10 +218,30 @@
   ===== END DOCUMENTATION =====
 #}
 
+{#  Helper function to process where clause and handle quoting
+    Handles three input formats:
+    1. Already properly quoted: "column = 'value'" -> "column = 'value'"
+    2. Double quotes (JSON style): 'column = "value"' -> "column = 'value'"
+    3. Unquoted values: "column = value" -> "column = 'value'" (for simple alphanumeric values)
+#}
+{% macro _process_where_clause(where_clause) %}
+  {%- if where_clause -%}
+    {# First, replace double single quotes with single quotes (for ''value'' -> 'value') #}
+    {%- set processed = where_clause | replace("''", "'") -%}
+
+    {# Replace double quotes with single quotes (for "value" -> 'value') #}
+    {%- set processed = processed | replace('"', "'") -%}
+
+    {{- processed -}}
+  {%- else -%}
+    {{- where_clause -}}
+  {%- endif -%}
+{% endmacro %}
+
 {#  Macro 1: row_diff_sql
   Core logic that generates the comparison SQL
 #}
-{% macro row_diff_sql(table_old, table_new, unique_key, compare_columns, null_token='∅') %}
+{% macro row_diff_sql(table_old, table_new, unique_key, compare_columns, null_token='∅', where_clause='') %}
   
   {%- if compare_columns == '*' -%}
     {%- set columns_query -%}
@@ -234,23 +285,29 @@
   {%- endfor -%}
 
 with old_table_hashed as (
-  select 
+  select
     {{ unique_key }},
     md5(concat_ws('||', {{ hash_columns | join(', ') }})) as row_hash
     {%- for col in compare_cols %}
     ,{{ col }}
     {%- endfor %}
   from {{ table_old }}
+  {%- if where_clause %}
+  where {{ edubi_utils._process_where_clause(where_clause) }}
+  {%- endif %}
 ),
 
 new_table_hashed as (
-  select 
+  select
     {{ unique_key }},
     md5(concat_ws('||', {{ hash_columns | join(', ') }})) as row_hash
     {%- for col in compare_cols %}
     ,{{ col }}
     {%- endfor %}
   from {{ table_new }}
+  {%- if where_clause %}
+  where {{ edubi_utils._process_where_clause(where_clause) }}
+  {%- endif %}
 ),
 
 comparison as (
@@ -292,18 +349,18 @@ order by
 {#  Macro 2: row_diff
   Model-friendly version that returns the SQL result
 #}
-{% macro row_diff(table_old, table_new, unique_key, compare_columns, null_token='∅') %}
-  
-  {{ return(row_diff_sql(table_old, table_new, unique_key, compare_columns, null_token)) }}
-  
+{% macro row_diff(table_old, table_new, unique_key, compare_columns, null_token='∅', where_clause='') %}
+
+  {{ return(row_diff_sql(table_old, table_new, unique_key, compare_columns, null_token, where_clause)) }}
+
 {% endmacro %}
 
 {#  Macro 3: row_diff_operation
   CLI operation that executes and logs results
 #}
-{% macro row_diff_operation(table_old, table_new, unique_key, compare_columns, null_token='∅') %}
-  
-  {% set diff_sql = row_diff_sql(table_old, table_new, unique_key, compare_columns, null_token) %}
+{% macro row_diff_operation(table_old, table_new, unique_key, compare_columns, null_token='∅', where_clause='') %}
+
+  {% set diff_sql = row_diff_sql(table_old, table_new, unique_key, compare_columns, null_token, where_clause) %}
   
   {# Execute the comparison query #}
   {% if execute %}
@@ -375,9 +432,9 @@ order by
 {#  Macro 4: row_diff_sql_show
   Helper operation to display the generated SQL from row_diff_sql
 #}
-{% macro row_diff_sql_show(table_old, table_new, unique_key, compare_columns, null_token='∅') %}
-  
-  {% set generated_sql = row_diff_sql(table_old, table_new, unique_key, compare_columns, null_token) %}
+{% macro row_diff_sql_show(table_old, table_new, unique_key, compare_columns, null_token='∅', where_clause='') %}
+
+  {% set generated_sql = row_diff_sql(table_old, table_new, unique_key, compare_columns, null_token, where_clause) %}
   
   {{ log("=== GENERATED SQL ===", info=true) }}
   {{ log(generated_sql, info=true) }}
