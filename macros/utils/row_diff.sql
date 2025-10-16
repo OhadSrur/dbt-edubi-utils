@@ -41,7 +41,7 @@
   ### Usage Examples
   
   #### Basic Usage with Specific Columns
-  {{ row_diff_sql(
+  {{ edubi_utils.row_diff_sql(
       table_old='prd_stg.customers',
       table_new='dev_stg.customers', 
       unique_key='customer_id',
@@ -49,7 +49,7 @@
   ) }}
   
   #### Wildcard Usage (All Columns)
-  {{ row_diff_sql(
+  {{ edubi_utils.row_diff_sql(
       table_old='prd_stg.students',
       table_new='dev_stg.students',
       unique_key='student_id',
@@ -73,7 +73,7 @@
   }}
   
   {{
-    row_diff(
+    edubi_utils.row_diff(
       table_old='prd_stg.customers',
       table_new='dev_stg.customers',
       unique_key='customer_id',
@@ -100,7 +100,7 @@
   ### Usage Examples
   
   #### Array Format (Recommended)
-  dbt run-operation row_diff_operation --args '{
+  edev dbt run-operation edubi_utils.row_diff_operation --args '{
     "table_old": "dev_stg.assessment_results",
     "table_new": "dev_stg.assessment_results_v2",
     "unique_key": "_key_assessment_result",
@@ -108,7 +108,7 @@
   }''
   
   #### Comma-Separated String Format
-  dbt run-operation row_diff_operation --args '{
+  edev dbt run-operation edubi_utils.row_diff_operation --args '{
     "table_old": "prd_stg.students",
     "table_new": "dev_stg.students",
     "unique_key": "student_id", 
@@ -117,7 +117,7 @@
   }''
   
   #### Wildcard Format (All Columns)
-  dbt run-operation row_diff_operation --args '{
+  edev dbt run-operation edubi_utils.row_diff_operation --args '{
     "table_old": "dev_stg.lu_assessment_periods",
     "table_new": "dev_stg.lu_assessment_periods_v1",
     "unique_key": "_key_period",
@@ -153,7 +153,7 @@
   ### Usage Examples
   
   #### Show SQL for Specific Columns
-  dbt run-operation row_diff_sql_show --args '{
+  edev dbt run-operation edubi_utils.row_diff_sql_show --args '{
     "table_old": "dev_stg.stg_tass__lu_assessment_result_period",
     "table_new": "dev_stg.stg_tass__lu_assessment_result_period_v1",
     "unique_key": "_key_tass__lu_assessment_result_period",
@@ -161,9 +161,9 @@
   }''
   
   #### Show SQL for All Columns (Wildcard)
-  dbt run-operation row_diff_sql_show --args '{
-    "table_old": "prd_stg.customers", 
-    "table_new": "dev_stg.customers",
+  edev dbt run-operation edubi_utils.row_diff_sql_show --args '{
+    "table_old": "prd_stg.fct_tasks_marks", 
+    "table_new": "dev_stg.fct_tasks_marks",
     "unique_key": "customer_id",
     "compare_columns": "*"
   }''
