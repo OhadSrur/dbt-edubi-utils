@@ -37,7 +37,22 @@
     - Traversal is transitive (BFS) via dbt’s dependency graph.
     - Column precheck is best-effort (simple tokenizer, no regex). Complex SQL may not be fully parsed.
 
-  Example 1: 
+  Example 1:
+    -- Only count records (no string literals in where_clause)
+    edev dbt run-operation edubi_utils.trace_record_dag --args '{
+      "target_model_name": "fct_syn__classes_students",
+      "where_clause": "academic_year=2026 and class_code ilike '\''08GEO%'\''",
+      "direction": "upstream",
+      "verbose": false
+    }''
+
+    edev dbt run-operation edubi_utils.trace_record_dag --args '{
+      "target_model_name": "fct_subject_outcome",
+      "where_clause": "academic_year=2025 and semester_number=2",
+      "direction": "upstream",
+      "verbose": false
+    }''
+
     edev dbt run-operation edubi_utils.trace_record_dag --args '{
       "target_model_name": "clean_syn__student_assessment_results",
       "where_clause": "student_assessment_results_seq_key = 10871210",
@@ -238,10 +253,13 @@
     {% set ids_in_where = [] %}
     {% for t in _tokens %}
       {% set t = t | trim %}
-      {% if t not in _blacklist and (t.isdigit() == false) %}
+      {# SQL identifiers cannot start with a digit; skip tokens like '08GEO' that
+         arise when shell quoting drops the surrounding single quotes from a string
+         literal (e.g. ilike '08GEO%' becomes ilike 08GEO% → 08GEO after % is stripped) #}
+      {% if t not in _blacklist and (t.isdigit() == false) and not (t[0:1].isdigit()) %}
         {% if '.' in t %}
           {% set last = (t.split('.') | last) | trim %}
-          {% if last and last not in _blacklist and last not in ids_in_where %}
+          {% if last and last not in _blacklist and last not in ids_in_where and not (last[0:1].isdigit()) %}
             {% do ids_in_where.append(last) %}
           {% endif %}
         {% else %}
