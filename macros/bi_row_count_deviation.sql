@@ -40,18 +40,22 @@ latest as (
 
 deviations as (
     select
+        concat_ws('-',
+         model_name, 
+         snapshot_date
+        )                                                           as _key_row_count_deviation,
         model_name,
         academic_year,
         is_current_year,
-        snapshot_date                                                as current_snapshot_date,
-        row_count                                                    as current_count,
+        snapshot_date                                               as current_snapshot_date,
+        row_count                                                   as current_count,
         prev_snapshot_date,
         prev_row_count,
         abs(row_count - prev_row_count)                             as absolute_diff,
         round(
             abs(row_count - prev_row_count)
             / nullif(prev_row_count::numeric, 0) * 100, 2
-        )                                                            as pct_diff,
+        )                                                           as pct_diff,
         case
             {% for model, overrides in var('bi_row_count_audit__model_overrides', {}).items() %}
             when model_name = '{{ model }}' and is_current_year = true
