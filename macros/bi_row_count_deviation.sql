@@ -41,8 +41,9 @@ latest as (
 deviations as (
     select
         concat_ws('-',
-         model_name, 
-         snapshot_date
+         model_name,
+         snapshot_date,
+         academic_year
         )                                                           as _key_row_count_deviation,
         model_name,
         academic_year,
